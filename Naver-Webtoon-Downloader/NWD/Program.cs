@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Runtime;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +14,7 @@ namespace WRforest.NWD
     class Program
     {
         public static int cursorPosition;
+        public static hsync.Network.NetQueue DownloadQueue;
         static void Main(string[] args)
         { 
             string assemblyVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -22,6 +25,7 @@ namespace WRforest.NWD
 
             Console.Title = Title;
             IO.Print($" 네이버 웹툰 다운로더 v{version} (빌드 {build})",false);
+            initNetwork();
             CheckUpdate(assemblyVersion);
             IO.Print($" 홈페이지 : https://nwd.wrforest.com/");
             IO.Print($" 소스코드 : https://github.com/wr-rainforest/Naver-Webtoon-Downloader");
@@ -139,6 +143,15 @@ namespace WRforest.NWD
             
             IO.Print(ProgressText, false, true);//i = 0;
             Console.SetCursorPosition(0, currentPosition);
+        }
+        static void initNetwork()
+        {
+            RuntimeHelpers.PrepareConstrainedRegions();
+            GCSettings.LatencyMode = GCLatencyMode.Batch;
+            ServicePointManager.DefaultConnectionLimit = int.MaxValue;
+            const int count = 50;
+            ThreadPool.SetMinThreads(count, count);
+            DownloadQueue = new hsync.Network.NetQueue(count);
         }
     }
 }
